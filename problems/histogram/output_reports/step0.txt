@@ -1,0 +1,332 @@
+Step 0
+
+ram --mode profile problems/histogram/submission.py
+🚀 Submitting to histogram on H100...
+⏳ Waiting for results...
+> View live progress: https://github.com/stanford-cs149/kernel-infra/actions/runs/19912800403
+> ⏳ Waiting for workflow to start...
+> ⏳ Workflow [19912800403](<https://github.com/stanford-cs149/kernel-infra/actions/runs/19912800403>): in_progress (0.0s)
+> ⏳ Workflow [19912800403](<https://github.com/stanford-cs149/kernel-infra/actions/runs/19912800403>): in_progress (20.2s)
+> ⏳ Workflow [19912800403](<https://github.com/stanford-cs149/kernel-infra/actions/runs/19912800403>): in_progress (40.4s)
+> ⏳ Workflow [19912800403](<https://github.com/stanford-cs149/kernel-infra/actions/runs/19912800403>): in_progress (60.7s)
+"**H100 on GitHub ✅ success**
+> View live progress: https://github.com/stanford-cs149/kernel-infra/actions/runs/19912800403
+> Workflow [19912800403](<https://github.com/stanford-cs149/kernel-infra/actions/runs/19912800403>) completed
+> Downloading artifacts... done
+> ✅ Profiling successful
+
+Running on:
+* GPU: `NVIDIA H100 80GB HBM3`
+* CPU: `AMD EPYC 7R13 Processor`
+* Runtime: `CUDA`
+* Platform: `Linux-6.14.0-1016-aws-x86_64-with-glibc2.39`
+* Torch: `2.9.1+cu128`
+
+
+## Profiling:
+```
+seed: 1001; length: 1048576; num_bins: 256; num_channels: 512
+
+  NCU Report:
+
+  Kernel 0: distribution_elementwise_grid_stride_kernel
+    Duration            : 1.59 ms
+    Compute_Throughput  : 67.93%
+    SM_Busy             : 68.08%
+    L1_Cache_Throughput : 5.33%
+    L2_Cache_Throughput : 9.61%
+    DRAM_Throughput     : 9.65%
+    L1_Cache_Hit_Rate   : 63.64%
+    L2_Cache_Hit_Rate   : 100.05%
+    DRAM_Read           : 20.00 KB
+    DRAM_Write          : 490.87 MB
+    L2_to_L1_Traffic    : 0.00 B
+    L1_to_L2_Traffic    : 512.00 MB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 1: vectorized_elementwise_kernel
+    Duration            : 2.75 us
+    Compute_Throughput  : 0.79%
+    SM_Busy             : 2.81%
+    L1_Cache_Throughput : 1.85%
+    L2_Cache_Throughput : 17.64%
+    DRAM_Throughput     : 0.05%
+    L1_Cache_Hit_Rate   : 0.00%
+    L2_Cache_Hit_Rate   : 99.40%
+    DRAM_Read           : 4.00 KB
+    DRAM_Write          : 0.00 B
+    L2_to_L1_Traffic    : 0.00 B
+    L1_to_L2_Traffic    : 512.00 KB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 2: elementwise_kernel
+    Duration            : 38.40 us
+    Compute_Throughput  : 3.26%
+    SM_Busy             : 3.75%
+    L1_Cache_Throughput : 13.76%
+    L2_Cache_Throughput : 65.91%
+    DRAM_Throughput     : 54.46%
+    L1_Cache_Hit_Rate   : 2.16%
+    L2_Cache_Hit_Rate   : 8.95%
+    DRAM_Read           : 64.03 MB
+    DRAM_Write          : 2.74 MB
+    L2_to_L1_Traffic    : 32.00 MB
+    L1_to_L2_Traffic    : 1.00 MB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 3: reduce_kernel
+    Duration            : 8.67 us
+    Compute_Throughput  : 10.07%
+    SM_Busy             : 18.57%
+    L1_Cache_Throughput : 3.87%
+    L2_Cache_Throughput : 13.08%
+    DRAM_Throughput     : 3.84%
+    L1_Cache_Hit_Rate   : 0.00%
+    L2_Cache_Hit_Rate   : 65.71%
+    DRAM_Read           : 1.06 MB
+    DRAM_Write          : 0.00 B
+    L2_to_L1_Traffic    : 1.00 MB
+    L1_to_L2_Traffic    : 8.03 KB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 4: vectorized_elementwise_kernel
+    Duration            : 2.50 us
+    Compute_Throughput  : 0.01%
+    SM_Busy             : 7.56%
+    L1_Cache_Throughput : 0.11%
+    L2_Cache_Throughput : 14.45%
+    DRAM_Throughput     : 0.05%
+    L1_Cache_Hit_Rate   : 0.00%
+    L2_Cache_Hit_Rate   : 100.32%
+    DRAM_Read           : 4.00 KB
+    DRAM_Write          : 0.00 B
+    L2_to_L1_Traffic    : 0.00 B
+    L1_to_L2_Traffic    : 2.00 KB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 5: kernelHistogram1D
+    Duration            : 36.67 us
+    Compute_Throughput  : 10.74%
+    SM_Busy             : 12.49%
+    L1_Cache_Throughput : 26.19%
+    L2_Cache_Throughput : 67.54%
+    DRAM_Throughput     : 56.64%
+    L1_Cache_Hit_Rate   : 0.00%
+    L2_Cache_Hit_Rate   : 7.93%
+    DRAM_Read           : 64.02 MB
+    DRAM_Write          : 2.28 MB
+    L2_to_L1_Traffic    : 32.00 MB
+    L1_to_L2_Traffic    : 456.00 KB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 6: unrolled_elementwise_kernel
+    Duration            : 3.20 us
+    Compute_Throughput  : 0.02%
+    SM_Busy             : 7.03%
+    L1_Cache_Throughput : 0.12%
+    L2_Cache_Throughput : 11.69%
+    DRAM_Throughput     : 0.33%
+    L1_Cache_Hit_Rate   : 0.00%
+    L2_Cache_Hit_Rate   : 95.89%
+    DRAM_Read           : 34.00 KB
+    DRAM_Write          : 0.00 B
+    L2_to_L1_Traffic    : 2.00 KB
+    L1_to_L2_Traffic    : 1.00 KB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 7: elementwise_kernel
+    Duration            : 38.59 us
+    Compute_Throughput  : 3.29%
+    SM_Busy             : 3.74%
+    L1_Cache_Throughput : 13.87%
+    L2_Cache_Throughput : 65.57%
+    DRAM_Throughput     : 54.17%
+    L1_Cache_Hit_Rate   : 2.16%
+    L2_Cache_Hit_Rate   : 8.92%
+    DRAM_Read           : 64.03 MB
+    DRAM_Write          : 2.74 MB
+    L2_to_L1_Traffic    : 32.00 MB
+    L1_to_L2_Traffic    : 1.00 MB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 8: reduce_kernel
+    Duration            : 8.86 us
+    Compute_Throughput  : 10.17%
+    SM_Busy             : 18.54%
+    L1_Cache_Throughput : 3.91%
+    L2_Cache_Throughput : 12.86%
+    DRAM_Throughput     : 3.75%
+    L1_Cache_Hit_Rate   : 0.00%
+    L2_Cache_Hit_Rate   : 65.69%
+    DRAM_Read           : 1.06 MB
+    DRAM_Write          : 0.00 B
+    L2_to_L1_Traffic    : 1.00 MB
+    L1_to_L2_Traffic    : 8.03 KB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 9: vectorized_elementwise_kernel
+    Duration            : 2.50 us
+    Compute_Throughput  : 0.01%
+    SM_Busy             : 7.55%
+    L1_Cache_Throughput : 0.12%
+    L2_Cache_Throughput : 14.41%
+    DRAM_Throughput     : 0.05%
+    L1_Cache_Hit_Rate   : 0.00%
+    L2_Cache_Hit_Rate   : 100.76%
+    DRAM_Read           : 4.00 KB
+    DRAM_Write          : 0.00 B
+    L2_to_L1_Traffic    : 0.00 B
+    L1_to_L2_Traffic    : 2.00 KB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 10: kernelHistogram1D
+    Duration            : 37.09 us
+    Compute_Throughput  : 10.71%
+    SM_Busy             : 12.39%
+    L1_Cache_Throughput : 26.12%
+    L2_Cache_Throughput : 66.47%
+    DRAM_Throughput     : 56.04%
+    L1_Cache_Hit_Rate   : 0.00%
+    L2_Cache_Hit_Rate   : 7.91%
+    DRAM_Read           : 64.02 MB
+    DRAM_Write          : 2.36 MB
+    L2_to_L1_Traffic    : 32.00 MB
+    L1_to_L2_Traffic    : 456.00 KB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 11: unrolled_elementwise_kernel
+    Duration            : 3.26 us
+    Compute_Throughput  : 0.02%
+    SM_Busy             : 6.82%
+    L1_Cache_Throughput : 0.13%
+    L2_Cache_Throughput : 11.53%
+    DRAM_Throughput     : 0.32%
+    L1_Cache_Hit_Rate   : 0.00%
+    L2_Cache_Hit_Rate   : 97.05%
+    DRAM_Read           : 34.00 KB
+    DRAM_Write          : 0.00 B
+    L2_to_L1_Traffic    : 2.00 KB
+    L1_to_L2_Traffic    : 1.00 KB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 12: elementwise_kernel
+    Duration            : 39.36 us
+    Compute_Throughput  : 3.33%
+    SM_Busy             : 3.73%
+    L1_Cache_Throughput : 14.05%
+    L2_Cache_Throughput : 64.15%
+    DRAM_Throughput     : 53.08%
+    L1_Cache_Hit_Rate   : 2.17%
+    L2_Cache_Hit_Rate   : 8.97%
+    DRAM_Read           : 64.03 MB
+    DRAM_Write          : 2.73 MB
+    L2_to_L1_Traffic    : 32.00 MB
+    L1_to_L2_Traffic    : 1.00 MB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 13: reduce_kernel
+    Duration            : 8.74 us
+    Compute_Throughput  : 9.98%
+    SM_Busy             : 18.61%
+    L1_Cache_Throughput : 3.83%
+    L2_Cache_Throughput : 13.08%
+    DRAM_Throughput     : 3.82%
+    L1_Cache_Hit_Rate   : 0.00%
+    L2_Cache_Hit_Rate   : 65.45%
+    DRAM_Read           : 1.06 MB
+    DRAM_Write          : 0.00 B
+    L2_to_L1_Traffic    : 1.00 MB
+    L1_to_L2_Traffic    : 8.03 KB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 14: vectorized_elementwise_kernel
+    Duration            : 2.46 us
+    Compute_Throughput  : 0.01%
+    SM_Busy             : 6.61%
+    L1_Cache_Throughput : 0.12%
+    L2_Cache_Throughput : 15.05%
+    DRAM_Throughput     : 0.05%
+    L1_Cache_Hit_Rate   : 0.00%
+    L2_Cache_Hit_Rate   : 100.66%
+    DRAM_Read           : 4.00 KB
+    DRAM_Write          : 0.00 B
+    L2_to_L1_Traffic    : 0.00 B
+    L1_to_L2_Traffic    : 2.00 KB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 15: kernelHistogram1D
+    Duration            : 36.70 us
+    Compute_Throughput  : 10.64%
+    SM_Busy             : 12.50%
+    L1_Cache_Throughput : 25.96%
+    L2_Cache_Throughput : 67.29%
+    DRAM_Throughput     : 56.54%
+    L1_Cache_Hit_Rate   : 0.00%
+    L2_Cache_Hit_Rate   : 7.86%
+    DRAM_Read           : 64.02 MB
+    DRAM_Write          : 2.27 MB
+    L2_to_L1_Traffic    : 32.00 MB
+    L1_to_L2_Traffic    : 456.00 KB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 16: unrolled_elementwise_kernel
+    Duration            : 3.23 us
+    Compute_Throughput  : 0.01%
+    SM_Busy             : 7.32%
+    L1_Cache_Throughput : 0.11%
+    L2_Cache_Throughput : 11.74%
+    DRAM_Throughput     : 0.33%
+    L1_Cache_Hit_Rate   : 0.00%
+    L2_Cache_Hit_Rate   : 95.92%
+    DRAM_Read           : 34.00 KB
+    DRAM_Write          : 0.00 B
+    L2_to_L1_Traffic    : 2.00 KB
+    L1_to_L2_Traffic    : 1.00 KB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 17: elementwise_kernel
+    Duration            : 38.14 us
+    Compute_Throughput  : 3.31%
+    SM_Busy             : 3.73%
+    L1_Cache_Throughput : 13.98%
+    L2_Cache_Throughput : 66.26%
+    DRAM_Throughput     : 54.84%
+    L1_Cache_Hit_Rate   : 2.17%
+    L2_Cache_Hit_Rate   : 8.87%
+    DRAM_Read           : 64.03 MB
+    DRAM_Write          : 2.81 MB
+    L2_to_L1_Traffic    : 32.00 MB
+    L1_to_L2_Traffic    : 1.00 MB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 18: reduce_kernel
+    Duration            : 8.90 us
+    Compute_Throughput  : 10.04%
+    SM_Busy             : 18.91%
+    L1_Cache_Throughput : 3.86%
+    L2_Cache_Throughput : 12.92%
+    DRAM_Throughput     : 3.76%
+    L1_Cache_Hit_Rate   : 0.00%
+    L2_Cache_Hit_Rate   : 64.90%
+    DRAM_Read           : 1.06 MB
+    DRAM_Write          : 0.00 B
+    L2_to_L1_Traffic    : 1.00 MB
+    L1_to_L2_Traffic    : 8.03 KB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 19: vectorized_elementwise_kernel
+    Duration            : 2.66 us
+    Compute_Throughput  : 0.01%
+    SM_Busy             : 6.83%
+    L1_Cache_Throughput : 0.12%
+    L2_Cache_Throughput : 13.81%
+    DRAM_Throughput     : 0.05%
+    L1_Cache_Hit_Rate   : 0.00%
+    L2_Cache_Hit_Rate   : 100.27%
+    DRAM_Read           : 4.00 KB
+    DRAM_Write          : 0.00 B
+    L2_to_L1_Traffic    : 0.00 B
+    L1_to_L2_Traffic    : 2.00 KB
+    L2_to_SHMEM_Traffic : 0.00 B
+```"
+
