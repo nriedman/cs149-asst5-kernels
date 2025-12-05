@@ -1,0 +1,95 @@
+"**H100 on GitHub ✅ success**
+> View live progress: https://github.com/stanford-cs149/kernel-infra/actions/runs/19955483408
+> Workflow [19955483408](<https://github.com/stanford-cs149/kernel-infra/actions/runs/19955483408>) completed
+> Downloading artifacts... done
+> ✅ Profiling successful
+
+Running on:
+* GPU: `NVIDIA H100 80GB HBM3`
+* CPU: `AMD EPYC 7R13 Processor`
+* Runtime: `CUDA`
+* Platform: `Linux-6.14.0-1016-aws-x86_64-with-glibc2.39`
+* Torch: `2.9.1+cu128`
+
+
+## Profiling:
+```
+seed: 1001; length: 1048576; num_bins: 256; num_channels: 512
+
+  NCU Report:
+
+  Kernel 0: distribution_elementwise_grid_stride_kernel
+    Duration            : 1.58 ms
+    Compute_Throughput  : 67.94%
+    SM_Busy             : 68.08%
+    L1_Cache_Throughput : 5.34%
+    L2_Cache_Throughput : 9.71%
+    DRAM_Throughput     : 9.74%
+    L1_Cache_Hit_Rate   : 63.66%
+    L2_Cache_Hit_Rate   : 100.02%
+    DRAM_Read           : 13.50 KB
+    DRAM_Write          : 491.00 MB
+    L2_to_L1_Traffic    : 0.00 B
+    L1_to_L2_Traffic    : 512.00 MB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 1: vectorized_elementwise_kernel
+    Duration            : 162.59 us
+    Compute_Throughput  : 12.18%
+    SM_Busy             : 8.93%
+    L1_Cache_Throughput : 48.56%
+    L2_Cache_Throughput : 83.82%
+    DRAM_Throughput     : 94.41%
+    L1_Cache_Hit_Rate   : 0.00%
+    L2_Cache_Hit_Rate   : 99.72%
+    DRAM_Read           : 12.75 KB
+    DRAM_Write          : 490.60 MB
+    L2_to_L1_Traffic    : 0.00 B
+    L1_to_L2_Traffic    : 512.00 MB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 2: vectorized_elementwise_kernel
+    Duration            : 2.59 us
+    Compute_Throughput  : 1.13%
+    SM_Busy             : 3.69%
+    L1_Cache_Throughput : 2.61%
+    L2_Cache_Throughput : 18.52%
+    DRAM_Throughput     : 0.04%
+    L1_Cache_Hit_Rate   : 0.00%
+    L2_Cache_Hit_Rate   : 100.34%
+    DRAM_Read           : 3.75 KB
+    DRAM_Write          : 0.00 B
+    L2_to_L1_Traffic    : 0.00 B
+    L1_to_L2_Traffic    : 512.00 KB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 3: histogram_privatized_kernel
+    Duration            : 152.69 ms
+    Compute_Throughput  : 31.55%
+    SM_Busy             : 31.57%
+    L1_Cache_Throughput : 13.29%
+    L2_Cache_Throughput : 88.28%
+    DRAM_Throughput     : 6.87%
+    L1_Cache_Hit_Rate   : 0.00%
+    L2_Cache_Hit_Rate   : 92.45%
+    DRAM_Read           : 32.06 GB
+    DRAM_Write          : 689.62 MB
+    L2_to_L1_Traffic    : 32.00 GB
+    L1_to_L2_Traffic    : 16.00 GB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 4: histogram_reduce_kernel
+    Duration            : 1.10 ms
+    Compute_Throughput  : 14.48%
+    SM_Busy             : 15.11%
+    L1_Cache_Throughput : 16.92%
+    L2_Cache_Throughput : 94.47%
+    DRAM_Throughput     : 28.96%
+    L1_Cache_Hit_Rate   : 0.03%
+    L2_Cache_Hit_Rate   : 64.39%
+    DRAM_Read           : 1012.96 MB
+    DRAM_Write          : 2.50 MB
+    L2_to_L1_Traffic    : 1.50 GB
+    L1_to_L2_Traffic    : 512.00 MB
+    L2_to_SHMEM_Traffic : 0.00 B
+```"
