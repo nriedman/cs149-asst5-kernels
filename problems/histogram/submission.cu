@@ -37,45 +37,51 @@ __global__ __launch_bounds__(1024, 1) void histogram_kernel_hybrid(
     for (int i = tid; i < length; i += stride) {
         // Process all channels in this block's group with optimized vectorization
         int c = start_channel;
-        for (; c + 7 < end_channel; c += 8) {
-            // Load 8 consecutive channels at once using uint2 (8 bytes)
-            uint2 values = *(uint2*)&data[i * num_channels + c];
-            
-            // Process 8 channels
+        
+        // Try uint4 for 16 bytes at once
+        for (; c + 15 < end_channel; c += 16) {
+            uint4 values = *(uint4*)&data[i * num_channels + c];
             uint8_t* vals = (uint8_t*)&values;
+            int ch = c - start_channel;
+            
+            #pragma unroll
+            for (int j = 0; j < 16; j++) {
+                atomicAdd(&shared_hist[(ch + j) * num_bins + vals[j]], 1);
+            }
+        }
+        
+        // Handle remaining in groups of 8
+        for (; c + 7 < end_channel; c += 8) {
+            uint2 values = *(uint2*)&data[i * num_channels + c];
+            uint8_t* vals = (uint8_t*)&values;
+            int ch = c - start_channel;
+            
+            #pragma unroll
             for (int j = 0; j < 8; j++) {
-                int local_idx = (c + j - start_channel) * num_bins + vals[j];
-                atomicAdd(&shared_hist[local_idx], 1);
+                atomicAdd(&shared_hist[(ch + j) * num_bins + vals[j]], 1);
             }
         }
         
         // Handle remaining channels in groups of 4
         for (; c + 3 < end_channel; c += 4) {
-            // Load 4 consecutive channels at once
             uint32_t values = *(uint32_t*)&data[i * num_channels + c];
             
-            // Process 4 channels
             uint8_t val0 = ((uint8_t*)&values)[0];
             uint8_t val1 = ((uint8_t*)&values)[1];
             uint8_t val2 = ((uint8_t*)&values)[2];
             uint8_t val3 = ((uint8_t*)&values)[3];
             
-            int local_idx0 = (c - start_channel) * num_bins + val0;
-            int local_idx1 = (c + 1 - start_channel) * num_bins + val1;
-            int local_idx2 = (c + 2 - start_channel) * num_bins + val2;
-            int local_idx3 = (c + 3 - start_channel) * num_bins + val3;
-            
-            atomicAdd(&shared_hist[local_idx0], 1);
-            atomicAdd(&shared_hist[local_idx1], 1);
-            atomicAdd(&shared_hist[local_idx2], 1);
-            atomicAdd(&shared_hist[local_idx3], 1);
+            int ch = c - start_channel;
+            atomicAdd(&shared_hist[ch * num_bins + val0], 1);
+            atomicAdd(&shared_hist[(ch + 1) * num_bins + val1], 1);
+            atomicAdd(&shared_hist[(ch + 2) * num_bins + val2], 1);
+            atomicAdd(&shared_hist[(ch + 3) * num_bins + val3], 1);
         }
         
         // Handle remaining channels
         for (; c < end_channel; c++) {
             uint8_t value = data[i * num_channels + c];
-            int local_idx = (c - start_channel) * num_bins + value;
-            atomicAdd(&shared_hist[local_idx], 1);
+            atomicAdd(&shared_hist[(c - start_channel) * num_bins + value], 1);
         }
     }
     __syncthreads();
