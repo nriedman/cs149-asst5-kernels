@@ -1,27 +1,3 @@
-🚀 Submitting to histogram on H100...
-⏳ Waiting for results...
-> View live progress: https://github.com/stanford-cs149/kernel-infra/actions/runs/19913451234
-> ⏳ Waiting for workflow to start...
-> ⏳ Workflow [19913451234](<https://github.com/stanford-cs149/kernel-infra/actions/runs/19913451234>): queued (queued)
-> ⏳ Workflow [19913451234](<https://github.com/stanford-cs149/kernel-infra/actions/runs/19913451234>): in_progress (0.0s)
-> ⏳ Workflow [19913451234](<https://github.com/stanford-cs149/kernel-infra/actions/runs/19913451234>): in_progress (20.4s)
-> ⏳ Workflow [19913451234](<https://github.com/stanford-cs149/kernel-infra/actions/runs/19913451234>): in_progress (40.6s)
-> ⏳ Workflow [19913451234](<https://github.com/stanford-cs149/kernel-infra/actions/runs/19913451234>): in_progress (60.8s)
-> ⏳ Workflow [19913451234](<https://github.com/stanford-cs149/kernel-infra/actions/runs/19913451234>): in_progress (81.0s)
-"**H100 on GitHub ✅ success**
-> View live progress: https://github.com/stanford-cs149/kernel-infra/actions/runs/19913451234
-> Workflow [19913451234](<https://github.com/stanford-cs149/kernel-infra/actions/runs/19913451234>) completed
-> Downloading artifacts... done
-> ✅ Profiling successful
-
-Running on:
-* GPU: `NVIDIA H100 80GB HBM3`
-* CPU: `AMD EPYC 7R13 Processor`
-* Runtime: `CUDA`
-* Platform: `Linux-6.14.0-1016-aws-x86_64-with-glibc2.39`
-* Torch: `2.9.1+cu128`
-
-
 ## Profiling:
 ```
 seed: 1001; length: 1048576; num_bins: 256; num_channels: 512
