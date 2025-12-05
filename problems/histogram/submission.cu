@@ -1,11 +1,3 @@
-import torch
-from task import input_t, output_t
-from torch.utils.cpp_extension import load_inline
-import sys
-import io
-
-# CUDA source code loaded from submission.cu
-cuda_source = """
 #include <cuda_runtime.h>
 
 //
@@ -99,49 +91,3 @@ torch::Tensor histogram_kernel(
     
     return histogram;
 }
-"""
-
-# C++ header declaration
-cpp_source = """
-#include <torch/extension.h>
-torch::Tensor histogram_kernel(torch::Tensor data, int num_bins);
-"""
-
-# Ensure stdout and stderr exist
-if sys.stdout is None:
-    sys.stdout = io.StringIO()
-if sys.stderr is None:
-    sys.stderr = io.StringIO()
-
-cuda_module = load_inline(
-    name='submission_cuda_histogram_nriedman',
-    cpp_sources=cpp_source,
-    cuda_sources=cuda_source,
-    functions=['histogram_kernel'],
-    verbose=True,  # Enable verbose to see compilation details
-    # with_cuda=True,
-    # build_directory=".",
-)
-
-def custom_kernel(data: input_t) -> output_t:
-    """
-    Wrapper function matching the required signature.
-    
-    Args:
-        data: Tuple of (array, num_bins) where:
-            array:    Tensor of shape [length, num_channels] with integer values in [0, num_bins-1]
-            num_bins: Number of bins for the histogram
-    
-    Returns:
-        histogram: Tensor of shape [num_channels, num_bins] containing histogram counts for each channel
-    """
-
-    array, num_bins = data
-    
-    if not array.is_cuda:
-        array = array.cuda()
-    
-    # Call CUDA kernel
-    histogram = cuda_module.histogram_kernel(array, num_bins)
-
-    return histogram

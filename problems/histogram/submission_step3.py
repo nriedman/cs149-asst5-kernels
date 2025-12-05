@@ -3,108 +3,104 @@ import torch
 import triton
 import triton.language as tl
 
-
 @triton.jit
 def find_starts(
-    # Pointers to inputs/outputs
-    sorted_bin_ids,
-    bin_starts,
-
-    # Dims
-    N,
-
-    # Block config
+    sorted_bin_ids_ptr,   # pointer to sorted_bin_ids (1D)
+    bin_starts_ptr,       # pointer to bin_starts (1D)
+    N,                    # length of sorted_bin_ids (scalar)
     BLOCK_SIZE: tl.constexpr
 ):
-    block_id = tl.program_id(0)
-    thread_id = tl.program_id(1)
-    thread_idx = block_id * BLOCK_SIZE + thread_id
+    # program/block id
+    pid = tl.program_id(0)
+    # lane indices within the program (0..BLOCK_SIZE-1)
+    offs = pid * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)  # vector of global indices
+    mask = offs < N
 
-    if thread_idx >= N:
-        return
+    # load current and previous ids (contiguous)
+    ids = tl.load(sorted_bin_ids_ptr + offs, mask=mask, other=0).to(tl.uint8)
+    prev = tl.load(sorted_bin_ids_ptr + (offs - 1), mask=mask & (offs > 0), other=-1).to(tl.uint8)
 
-    if thread_idx == 0 or sorted_bin_ids[thread_idx] != sorted_bin_ids[thread_idx - 1]:
-        bin_starts[sorted_bin_ids[thread_idx]] = thread_idx
+    is_start = mask & ((offs == 0) | (ids != prev))
+    # guard pointer arithmetic so masked lanes don't produce invalid addresses
+    target_ptr = bin_starts_ptr + tl.where(is_start, ids, 0)
+    tl.store(target_ptr, offs.to(tl.uint8), mask=is_start)
 
 
 @triton.jit
 def bin_sizes(
-    # Pointers to inputs/outputs
-    bin_starts,
-    histogram_bins,
-
-    # Dims
-    num_items,
-    num_bins,
-
-    # Block config
-    BLOCK_SIZE: tl.constexpr
+    bin_starts_ptr,   # 1D uint8 of size num_bins
+    histogram_ptr,    # 1D uint8 of size num_bins
+    num_items,        # int32
+    num_bins,         # int32
+    BLOCK_SIZE: tl.constexpr,
+    MAX_BINS: tl.constexpr,  # must be >= num_bins
 ):
-    block_id = tl.program_id(0)
-    thread_id = tl.program_id(1)
-    thread_idx = block_id * BLOCK_SIZE + thread_id
+    pid = tl.program_id(0)
+    tid = pid * BLOCK_SIZE + tl.arange(0, BLOCK_SIZE)
+    mask = tid < num_bins
+    starts = tl.load(bin_starts_ptr + tid, mask=mask, other=-1)
 
-    if thread_idx >= num_bins:
-        return
-    
-    if bin_starts[thread_idx] == -1:
-        histogram_bins[thread_idx] = 0
-    else:
-        next_index = thread_idx + 1
-        while next_index < num_bins and bin_starts[next_index] == -1:
-            next_index += 1
-        
-        if next_index < num_bins:
-            histogram_bins[thread_idx] = bin_starts[next_index] - bin_starts[thread_idx]
-        else:
-            histogram_bins[thread_idx] = num_items - bin_starts[thread_idx]
+    # empty bins
+    tl.store(histogram_ptr + tid, 0, mask=mask & (starts == -1))
+
+    active = mask & (starts != -1)
+
+    # forward search for next valid start
+    next_idx = tid + 1
+    next_valid = tl.full((BLOCK_SIZE,), -1, dtype=tl.uint8)
+
+    for _ in range(MAX_BINS):
+        searching = active & (next_valid == -1) & (next_idx < num_bins)
+        cand = tl.load(bin_starts_ptr + next_idx, mask=searching, other=-1)
+        found = searching & (cand != -1)
+        next_valid = tl.where(found, next_idx.to(tl.uint8), next_valid)
+        next_idx = next_idx + tl.where(searching, 1, 0)
+
+    has_next = active & (next_valid != -1)
+    next_starts = tl.load(bin_starts_ptr + next_valid, mask=has_next, other=-1)
+    sizes = tl.where(has_next, next_starts - starts, num_items - starts)
+    tl.store(histogram_ptr + tid, sizes, mask=active)
 
 
-def custom_kernel(data: input_t) -> output_t:
-    """
-    Args:
-        data:
-            Tuple of (array, num_bins) where:
-                array:    Tensor of shape [length, num_channels], dtype=uint8, containing
-                          integer values in the range [0, num_bins - 1]
-                num_bins: Number of histogram bins (defines allowed value range)
-
-    Returns:
-        histogram:
-            Tensor of shape [num_channels, num_bins], where histogram[c][b]
-            contains the count of how many times value b appears in channel c.
-    """
+def custom_kernel(data):
     array, num_bins = data
-    
-    # get dimensions
     length, num_channels = array.shape
 
-    if not array.is_cuda:
-        array = array.cuda()
-    
-    # allocate output histogram
-    output_dtype = torch.int32
-    histogram = torch.zeros(num_channels, num_bins, dtype=output_dtype, device=array.device)
+    device = array.device if array.is_cuda else "cuda"
+    array = array.to(device)
 
-    # temp buffers
-    bin_starts = torch.full((length,), -1, dtype=output_dtype, device=array.device)
+    output_dtype = torch.uint8
+    histogram = torch.zeros((num_channels, num_bins), dtype=output_dtype, device=array.device)
 
-    # thread blocks
-    BLOCK_SIZE = 1024  # Each block processes 1024 elements
-    num_item_blocks = triton.cdiv(length, BLOCK_SIZE)
-    num_bin_blocks = triton.cdiv(num_bins, BLOCK_SIZE)
-    
-    # sort the array long the (length,) dimension
-    sorted_bin_ids, _ = torch.sort(array, dim=0)
-    
+    # Make per-channel slices contiguous by transposing
+    arr_T = array.transpose(0, 1).contiguous()  # shape: (C, L)
+    sorted_ids, _ = torch.sort(arr_T, dim=1)    # still contiguous per row
+
+    histogram = torch.zeros((num_channels, num_bins), dtype=torch.uint8, device=device)
+
+    BLOCK_ITEMS = 1024
+    BLOCK_BINS = 256
+    num_item_blocks = triton.cdiv(length, BLOCK_ITEMS)
+    num_bin_blocks = triton.cdiv(num_bins, BLOCK_BINS)
+    MAX_BINS = max(256, int(num_bins))  # constexpr >= num_bins
 
     for c in range(num_channels):
-        # 
-        find_starts[(num_item_blocks, BLOCK_SIZE)](sorted_bin_ids, )
+        bin_starts = torch.full((num_bins,), -1, dtype=torch.uint8, device=device)
 
+        find_starts[(num_item_blocks,)](
+            sorted_ids[c, :],
+            bin_starts,
+            length,
+            BLOCK_SIZE=BLOCK_ITEMS,
+        )
 
-    for b in range(length):
-        for c in range(num_channels):
-            histogram[c][array[b][c]] += 1
-    
+        bin_sizes[(num_bin_blocks,)](
+            bin_starts,
+            histogram[c, :],
+            length,
+            num_bins,
+            BLOCK_SIZE=BLOCK_BINS,
+            MAX_BINS=MAX_BINS,
+        )
+
     return histogram
