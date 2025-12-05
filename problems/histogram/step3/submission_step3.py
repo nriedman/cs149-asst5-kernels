@@ -81,7 +81,6 @@ def custom_kernel(data: input_t) -> output_t:
         histogram,
         length,
         num_channels,
-        num_channels,
         num_bins,
         BLOCK_SIZE=BLOCK_SIZE,
     )
