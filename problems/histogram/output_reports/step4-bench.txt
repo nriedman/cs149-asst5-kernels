@@ -1,6 +1,6 @@
 "**H100 on GitHub ✅ success**
-> View live progress: https://github.com/stanford-cs149/kernel-infra/actions/runs/19914342334
-> Workflow [19914342334](<https://github.com/stanford-cs149/kernel-infra/actions/runs/19914342334>) completed
+> View live progress: https://github.com/stanford-cs149/kernel-infra/actions/runs/19955362957
+> Workflow [19955362957](<https://github.com/stanford-cs149/kernel-infra/actions/runs/19955362957>) completed
 > Downloading artifacts... done
 > ✅ Benchmarking successful
 
@@ -15,6 +15,6 @@ Running on:
 ## Benchmarks:
 ```
 seed: 1001; length: 1048576; num_bins: 256; num_channels: 512
- ⏱ 154 ± 0.0 ms
- ⚡ 154 ms 🐌 155 ms
+ ⏱ 322 ± 0.1 ms
+ ⚡ 322 ms 🐌 322 ms
 ```"

@@ -1,1 +1,65 @@
-Submission error: error sending request for url (http://44.228.22.179:8000/histogram/H100/profile): connection error: Connection reset by peer (os error 104)
+"**H100 on GitHub ✅ success**
+> View live progress: https://github.com/stanford-cs149/kernel-infra/actions/runs/19955125499
+> Workflow [19955125499](<https://github.com/stanford-cs149/kernel-infra/actions/runs/19955125499>) completed
+> Downloading artifacts... done
+> ✅ Profiling successful
+
+Running on:
+* GPU: `NVIDIA H100 80GB HBM3`
+* CPU: `AMD EPYC 7R13 Processor`
+* Runtime: `CUDA`
+* Platform: `Linux-6.14.0-1016-aws-x86_64-with-glibc2.39`
+* Torch: `2.9.1+cu128`
+
+
+## Profiling:
+```
+seed: 1001; length: 1048576; num_bins: 256; num_channels: 512
+
+  NCU Report:
+
+  Kernel 0: distribution_elementwise_grid_stride_kernel
+    Duration            : 1.59 ms
+    Compute_Throughput  : 67.92%
+    SM_Busy             : 68.08%
+    L1_Cache_Throughput : 5.33%
+    L2_Cache_Throughput : 9.62%
+    DRAM_Throughput     : 9.65%
+    L1_Cache_Hit_Rate   : 63.62%
+    L2_Cache_Hit_Rate   : 100.13%
+    DRAM_Read           : 35.00 KB
+    DRAM_Write          : 490.91 MB
+    L2_to_L1_Traffic    : 0.00 B
+    L1_to_L2_Traffic    : 512.00 MB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 1: vectorized_elementwise_kernel
+    Duration            : 2.59 us
+    Compute_Throughput  : 1.21%
+    SM_Busy             : 3.70%
+    L1_Cache_Throughput : 2.81%
+    L2_Cache_Throughput : 18.97%
+    DRAM_Throughput     : 0.05%
+    L1_Cache_Hit_Rate   : 0.00%
+    L2_Cache_Hit_Rate   : 100.35%
+    DRAM_Read           : 4.00 KB
+    DRAM_Write          : 0.00 B
+    L2_to_L1_Traffic    : 0.00 B
+    L1_to_L2_Traffic    : 512.00 KB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 2: histogram_kernel
+    Duration            : 1152.48 ms
+    Compute_Throughput  : 4.03%
+    SM_Busy             : 4.54%
+    L1_Cache_Throughput : 1.84%
+    L2_Cache_Throughput : 60.76%
+    DRAM_Throughput     : 0.02%
+    L1_Cache_Hit_Rate   : 0.00%
+    L2_Cache_Hit_Rate   : 99.91%
+    DRAM_Read           : 815.77 MB
+    DRAM_Write          : 27.32 MB
+    L2_to_L1_Traffic    : 32.00 GB
+    L1_to_L2_Traffic    : 16.00 GB
+    L2_to_SHMEM_Traffic : 0.00 B
+```"

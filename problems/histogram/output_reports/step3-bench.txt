@@ -1,1 +1,20 @@
-Submission error: error sending request for url (http://44.228.22.179:8000/histogram/H100/benchmark): error trying to connect: tcp connect error: Connection refused (os error 111)
+"**H100 on GitHub ✅ success**
+> View live progress: https://github.com/stanford-cs149/kernel-infra/actions/runs/19955203241
+> Workflow [19955203241](<https://github.com/stanford-cs149/kernel-infra/actions/runs/19955203241>) completed
+> Downloading artifacts... done
+> ✅ Benchmarking successful
+
+Running on:
+* GPU: `NVIDIA H100 80GB HBM3`
+* CPU: `AMD EPYC 7R13 Processor`
+* Runtime: `CUDA`
+* Platform: `Linux-6.14.0-1016-aws-x86_64-with-glibc2.39`
+* Torch: `2.9.1+cu128`
+
+
+## Benchmarks:
+```
+seed: 1001; length: 1048576; num_bins: 256; num_channels: 512
+ ⏱ 1130 ± 5.9 ms
+ ⚡ 1115 ms 🐌 1158 ms
+```"
