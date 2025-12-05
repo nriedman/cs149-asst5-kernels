@@ -1,0 +1,26 @@
+"**H100 on GitHub ✅ success**
+> View live progress: https://github.com/stanford-cs149/kernel-infra/actions/runs/19951504996
+> Workflow [19951504996](<https://github.com/stanford-cs149/kernel-infra/actions/runs/19951504996>) completed
+> Downloading artifacts... done
+> ✅ Compilation successful
+> ✅ Benchmarking successful
+
+Running on:
+* GPU: `NVIDIA H100 80GB HBM3`
+* CPU: `AMD EPYC 7R13 Processor`
+* Runtime: `CUDA`
+* Platform: `Linux-6.14.0-1016-aws-x86_64-with-glibc2.39`
+* Torch: `2.9.1+cu128`
+
+
+## Benchmarks:
+```
+seed: 1001; length: 1048576; num_bins: 256; num_channels: 512
+ ⏱ 2.89 ± 0.013 ms
+ ⚡ 2.66 ms 🐌 3.12 ms
+```
+
+## Program stdout:
+```
+ninja: no work to do.
+ninja: no work to do.```"

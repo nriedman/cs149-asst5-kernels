@@ -7,43 +7,52 @@ import io
 # CUDA source code loaded from submission.cu
 cuda_source = """
 #include <cuda_runtime.h>
+#include <torch/extension.h>
 
-//
-// craete your function: __global__ void kernel(...) here
-// Note: input data is of type uint8_t
-//
-
-// Launch with N threads
-__global__ void find_starts(const uint8_t* sorted_bin_ids, int* bin_starts, int N) {
-    int tid = blockIdx.x * blockDim.x + threadIdx.x;
-    if (tid >= N) return;
-
-    if (tid == 0 || (sorted_bin_ids[tid] != sorted_bin_ids[tid-1])) {
-        bin_starts[sorted_bin_ids[tid]] = tid;
+// Kernel: Privatization with Shared Memory
+// Each thread block maintains a private histogram in shared memory
+// to reduce global atomic contention
+__global__ void histogram_kernel_shared(
+    const uint8_t* __restrict__ data,  // [length, num_channels]
+    int32_t* __restrict__ histogram,   // [num_channels, num_bins]
+    int length,
+    int num_channels,
+    int num_bins
+) {
+    // Allocate shared memory for private histogram
+    // Each block has its own copy: [num_bins] entries
+    extern __shared__ int32_t shared_hist[];
+    
+    // Each thread block processes one channel
+    int channel = blockIdx.x;
+    
+    if (channel >= num_channels) return;
+    
+    // Step 1: Initialize shared memory histogram to zero
+    // Use all threads in the block to collaboratively initialize
+    for (int bin = threadIdx.x; bin < num_bins; bin += blockDim.x) {
+        shared_hist[bin] = 0;
     }
-}
-
-// Launch with num_bins threads
-__global__ void bin_sizes(const int* bin_starts, int* histogram_bins, int num_items, int num_bins) {
-    int tid = blockIdx.x * blockDim.x + threadIdx.x;
-    if (tid >= num_bins) return;
-
-    if (bin_starts[tid] == 0) {
-        histogram_bins[tid] = 0;
-    } else {
-        int next_id = tid + 1;
-        while (next_id < num_bins && bin_starts[next_id] == -1) {
-            next_id++;
-        }
+    __syncthreads();  // Ensure all threads finish initialization
+    
+    // Step 2: Each thread processes a portion of the channel data
+    // and accumulates into shared memory using atomics
+    for (int i = threadIdx.x; i < length; i += blockDim.x) {
+        uint8_t value = data[i * num_channels + channel];
         
-        if (next_id < num_bins) {
-            histogram_bins[tid] = bin_starts[next_id] - bin_starts[tid];
-        } else {
-            histogram_bins[tid] = num_bins - bin_starts[tid];
-        }
+        // Atomic add to shared memory (much faster than global memory atomics)
+        atomicAdd(&shared_hist[value], 1);
+    }
+    __syncthreads();  // Ensure all threads finish accumulation
+    
+    // Step 3: Reduce shared histogram to global memory
+    // Each thread writes out a portion of the bins
+    int* global_hist = histogram + channel * num_bins;
+    for (int bin = threadIdx.x; bin < num_bins; bin += blockDim.x) {
+        // Use atomic add to global memory (but only once per bin per block)
+        atomicAdd(&global_hist[bin], shared_hist[bin]);
     }
 }
-
 
 // Host function to launch kernel
 torch::Tensor histogram_kernel(
@@ -51,14 +60,10 @@ torch::Tensor histogram_kernel(
     int num_bins
 ) {
     TORCH_CHECK(data.device().is_cuda(), "Tensor data must be a CUDA tensor");
+    TORCH_CHECK(data.dtype() == torch::kUInt8, "Data must be uint8");
 
     const int length = data.size(0);
     const int num_channels = data.size(1);
-
-    // Reshape input tensor so channel slices are contiguous and sort into ascending order
-    data = data.transpose(0, 1).contiguous();  // shape: (C, L)
-
-    torch::Tensor sorted_ids_tnsr = std::get<0>(torch::sort(data, dim=1));
     
     // Allocate output tensor
     auto options = torch::TensorOptions()
@@ -66,31 +71,27 @@ torch::Tensor histogram_kernel(
         .device(data.device());
     torch::Tensor histogram = torch::zeros({num_channels, num_bins}, options);
     
-    int BLOCK_SIZE = 1024;
-
-    int num_blocks_items = (length + BLOCK_SIZE - 1) / BLOCK_SIZE;
-    int num_blocks_bins = (num_bins + BLOCK_SIZE - 1) / BLOCK_SIZE;
-
-    ////
-    // Launch your kernel here
-    for (int c = 0; c < num_channels; c++) {
-        // find starting point of each bin
-        torch::Tensor bin_starts_tensor = torch::full({num_bins, }, -1, options);
-        int* bin_starts = bin_starts_tensor.data_ptr<int>();
-
-        torch::Tensor sorted_ids_slice = sorted_ids_tnsr.slice(0, c, c + 1).squeeze(0);
-        uint8_t* sorted_ids = sorted_ids_slice.data_ptr<uint8_t>();
-
-        find_starts<<<num_blocks_items, BLOCK_SIZE>>>(sorted_ids, bin_starts, length);
-
-        torch::Tensor histogram_slice = histogram.slice(0, c, c + 1).squeeze(0);
-        int* out_ptr = histogram_slice.data_ptr<int>();
-
-        bin_sizes<<<num_blocks_bins, BLOCK_SIZE>>>(bin_starts, out_ptr, length, num_bins);
-    }
-    ////
-
-
+    // Get raw pointers
+    const uint8_t* data_ptr = data.data_ptr<uint8_t>();
+    int32_t* hist_ptr = histogram.data_ptr<int32_t>();
+    
+    // Launch configuration
+    // One block per channel for simplicity
+    int threads_per_block = 256;  // Good balance for most GPUs
+    int num_blocks = num_channels;
+    
+    // Shared memory size: num_bins * sizeof(int32_t)
+    size_t shared_mem_size = num_bins * sizeof(int32_t);
+    
+    // Launch kernel
+    histogram_kernel_shared<<<num_blocks, threads_per_block, shared_mem_size>>>(
+        data_ptr,
+        hist_ptr,
+        length,
+        num_channels,
+        num_bins
+    );
+    
     // Check for errors
     cudaError_t err = cudaGetLastError();
     if (err != cudaSuccess) {
@@ -99,6 +100,7 @@ torch::Tensor histogram_kernel(
     
     return histogram;
 }
+
 """
 
 # C++ header declaration
