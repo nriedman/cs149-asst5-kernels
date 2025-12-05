@@ -1,0 +1,51 @@
+## Profiling:
+```
+seed: 1001; length: 1048576; num_bins: 256; num_channels: 512
+
+  NCU Report:
+
+  Kernel 0: distribution_elementwise_grid_stride_kernel
+    Duration            : 1.59 ms
+    Compute_Throughput  : 67.93%
+    SM_Busy             : 68.08%
+    L1_Cache_Throughput : 5.33%
+    L2_Cache_Throughput : 9.59%
+    DRAM_Throughput     : 9.65%
+    L1_Cache_Hit_Rate   : 63.67%
+    L2_Cache_Hit_Rate   : 100.10%
+    DRAM_Read           : 13.75 KB
+    DRAM_Write          : 490.89 MB
+    L2_to_L1_Traffic    : 0.00 B
+    L1_to_L2_Traffic    : 512.00 MB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 1: vectorized_elementwise_kernel
+    Duration            : 2.53 us
+    Compute_Throughput  : 0.65%
+    SM_Busy             : 3.63%
+    L1_Cache_Throughput : 1.51%
+    L2_Cache_Throughput : 18.88%
+    DRAM_Throughput     : 0.19%
+    L1_Cache_Hit_Rate   : 0.00%
+    L2_Cache_Hit_Rate   : 99.57%
+    DRAM_Read           : 4.00 KB
+    DRAM_Write          : 12.00 KB
+    L2_to_L1_Traffic    : 0.00 B
+    L1_to_L2_Traffic    : 512.00 KB
+    L2_to_SHMEM_Traffic : 0.00 B
+
+  Kernel 2: histogram_kernel
+    Duration            : 1121.54 ms
+    Compute_Throughput  : 4.03%
+    SM_Busy             : 4.52%
+    L1_Cache_Throughput : 1.84%
+    L2_Cache_Throughput : 62.17%
+    DRAM_Throughput     : 0.02%
+    L1_Cache_Hit_Rate   : 0.00%
+    L2_Cache_Hit_Rate   : 100.04%
+    DRAM_Read           : 733.91 MB
+    DRAM_Write          : 27.11 MB
+    L2_to_L1_Traffic    : 32.00 GB
+    L1_to_L2_Traffic    : 16.00 GB
+    L2_to_SHMEM_Traffic : 0.00 B
+```"
